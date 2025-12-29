@@ -2,7 +2,10 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import numpy as np
 import os
+from dotenv import load_dotenv
 from locations import locations
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
