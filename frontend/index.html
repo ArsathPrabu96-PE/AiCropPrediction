@@ -70,7 +70,7 @@
 
         // Load states on page load
         window.onload = function() {
-            fetch('http://localhost:5000/states')
+            fetch('/states')
                 .then(response => response.json())
                 .then(data => {
                     const stateSelect = document.getElementById('state');
@@ -95,7 +95,7 @@
             villageSelect.disabled = true;
 
             if (state) {
-                fetch(`http://localhost:5000/districts?state=${encodeURIComponent(state)}`)
+                fetch(`/districts?state=${encodeURIComponent(state)}`)
                     .then(response => response.json())
                     .then(data => {
                         data.forEach(district => {
@@ -118,7 +118,7 @@
             villageSelect.disabled = !district;
 
             if (state && district) {
-                fetch(`http://localhost:5000/villages?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}`)
+                fetch(`/villages?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.length > 0) {
@@ -153,7 +153,7 @@
                 season: document.getElementById('season').value
             };
 
-            fetch('http://localhost:5000/recommend', {
+            fetch('/recommend', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
