@@ -3,7 +3,7 @@ from flask_cors import CORS
 import numpy as np
 import os
 from dotenv import load_dotenv
-from locations import locations
+from backend.locations import locations
 
 load_dotenv()
 
@@ -121,7 +121,7 @@ def get_states():
 
 @app.route('/')
 def index():
-    return send_from_directory(os.path.join(os.path.dirname(__file__), '..', 'frontend'), 'index.html')
+    return send_from_directory(os.path.join(os.path.dirname(__file__), 'frontend'), 'index.html')
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
