@@ -9,14 +9,31 @@ This is a web application that helps farmers choose the best crop to grow based 
 - Web-based interface
 - REST API backend
 
-## Installation
+## Installation (Local Development)
 
 1. Clone the repository
 2. Create virtual environment: `python -m venv venv`
 3. Activate venv: `venv\Scripts\activate` (Windows)
 4. Install dependencies: `pip install -r requirements.txt`
-5. Run the backend: `python backend/app.py`
-6. Open `frontend/index.html` in a web browser
+5. Run the app: `python app.py`
+6. Open http://localhost:5000 in a web browser
+
+## Deployment on Render
+
+1. Sign up for a free account at https://render.com
+2. Connect your GitHub repository
+3. Create a new Web Service
+4. Select Python as the runtime
+5. Set the following settings:
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `python app.py`
+6. Add environment variable: `PORT` (Render sets this automatically)
+7. Deploy
+
+Note: For production, build the frontend first:
+- `cd frontend && npm install && npm run build`
+- Update app.py to change 'frontend' to 'frontend/build' in send_from_directory calls
+- Commit and push the changes
 
 ## API Endpoints
 
