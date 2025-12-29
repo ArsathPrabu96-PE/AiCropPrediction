@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>AI Crop Recommendation System</title>
+    <style>
+        body { font-family: 'Roboto', sans-serif; font-weight: 400; margin: 20px; background-size: cover; background-position: center; background-repeat: no-repeat; background-image: url('https://loremflickr.com/800/600/nature'); transition: background-image 0.5s ease; }
+        h1 { font-weight: 700; color: #2e7d32; }
+        form { max-width: 400px; margin-bottom: 20px; background: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 8px; }
+        label { display: block; margin-top: 10px; font-weight: 500; }
+        input, select { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; margin-top: 10px; border-radius: 4px; font-weight: 500; }
+        button:hover { background-color: #45a049; }
+        #results { margin-top: 20px; }
+        .recommendation { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; background: rgba(255, 255, 255, 0.9); border-radius: 8px; }
+        .recommendation h3 { font-weight: 500; color: #1976d2; }
+        .recommendation p { font-weight: 300; }
+    </style>
+</head>
+<body>
+    <h1>AI Crop Recommendation System</h1>
+    <form id="recommendationForm">
+        <label for="state">State:</label>
+        <select id="state" required>
+            <option value="">Select State</option>
+        </select>
+
+        <label for="district">District:</label>
+        <select id="district" required disabled>
+            <option value="">Select District</option>
+        </select>
+
+        <label for="village">Village (Optional):</label>
+        <select id="village" disabled>
+            <option value="">Select Village or leave blank</option>
+        </select>
+
+        <label for="ph">Soil pH (optional):</label>
+        <input type="number" id="ph" step="0.1" placeholder="Leave blank to use location default">
+
+        <label for="nitrogen">Nitrogen Content (optional):</label>
+        <input type="number" id="nitrogen" step="0.01" placeholder="Leave blank to use location default">
+
+        <label for="phosphorus">Phosphorus Content (optional):</label>
+        <input type="number" id="phosphorus" step="0.01" placeholder="Leave blank to use location default">
+
+        <label for="potassium">Potassium Content (optional):</label>
+        <input type="number" id="potassium" step="0.01" placeholder="Leave blank to use location default">
+
+        <label for="season">Season:</label>
+        <select id="season" required>
+            <option value="1">Winter</option>
+            <option value="2">Spring</option>
+            <option value="3">Summer</option>
+            <option value="4">Autumn</option>
+        </select>
+
+        <button type="submit">Get Recommendations</button>
+    </form>
+
+    <div id="results"></div>
+
+    <script>
+        const categoryImages = {
+            'Cereal': 'https://loremflickr.com/800/600/grain', // Grain field
+            'Vegetable': 'https://loremflickr.com/800/600/garden' // Vegetable garden
+        };
+
+        // Load states on page load
+        window.onload = function() {
+            fetch('http://localhost:5000/states')
+                .then(response => response.json())
+                .then(data => {
+                    const stateSelect = document.getElementById('state');
+                    data.forEach(state => {
+                        const option = document.createElement('option');
+                        option.value = state;
+                        option.textContent = state;
+                        stateSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading states:', error));
+        };
+
+        // Handle state change
+        document.getElementById('state').addEventListener('change', function() {
+            const state = this.value;
+            const districtSelect = document.getElementById('district');
+            const villageSelect = document.getElementById('village');
+            districtSelect.innerHTML = '<option value="">Select District</option>';
+            villageSelect.innerHTML = '<option value="">Select Village or leave blank</option>';
+            districtSelect.disabled = !state;
+            villageSelect.disabled = true;
+
+            if (state) {
+                fetch(`http://localhost:5000/districts?state=${encodeURIComponent(state)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(district => {
+                            const option = document.createElement('option');
+                            option.value = district;
+                            option.textContent = district;
+                            districtSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error loading districts:', error));
+            }
+        });
+
+        // Handle district change
+        document.getElementById('district').addEventListener('change', function() {
+            const state = document.getElementById('state').value;
+            const district = this.value;
+            const villageSelect = document.getElementById('village');
+            villageSelect.innerHTML = '<option value="">Select Village or leave blank</option>';
+            villageSelect.disabled = !district;
+
+            if (state && district) {
+                fetch(`http://localhost:5000/villages?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            data.forEach(village => {
+                                const option = document.createElement('option');
+                                option.value = village;
+                                option.textContent = village;
+                                villageSelect.appendChild(option);
+                            });
+                        } else {
+                            villageSelect.innerHTML = '<option value="">No villages available</option>';
+                        }
+                    })
+                    .catch(error => console.error('Error loading villages:', error));
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('recommendationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const village = document.getElementById('village').value;
+            const district = document.getElementById('district').value;
+            const location = village || district;
+
+            const data = {
+                location: location,
+                ph: document.getElementById('ph').value || null,
+                nitrogen: document.getElementById('nitrogen').value || null,
+                phosphorus: document.getElementById('phosphorus').value || null,
+                potassium: document.getElementById('potassium').value || null,
+                season: document.getElementById('season').value
+            };
+
+            fetch('http://localhost:5000/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '<h2>Recommended Crops:</h2>';
+                data.recommendations.forEach(rec => {
+                    const div = document.createElement('div');
+                    div.className = 'recommendation';
+                    div.innerHTML = `
+                        <h3>${rec.crop} (${rec.category})</h3>
+                        <p>Expected Yield: ${rec.yield} kg/hectare</p>
+                        <p>Estimated Profit: ₹${rec.profit}</p>
+                    `;
+                    resultsDiv.appendChild(div);
+                });
+
+                // Change background based on top recommended crop category
+                const topCategory = data.recommendations[0].category;
+                const imageUrl = categoryImages[topCategory] || 'https://loremflickr.com/800/600/earth'; // Earth/soil image
+                document.body.style.backgroundImage = `url('${imageUrl}')`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('results').innerHTML = '<p>Error getting recommendations. Please try again.</p>';
+            });
+        });
+    </script>
+</body>
+</html>
