@@ -30,6 +30,18 @@ This is a web application that helps farmers choose the best crop to grow based 
 6. Add environment variable: `PORT` (Render sets this automatically)
 7. Deploy
 
+## Deployment on PythonAnywhere
+
+1. Sign up for a free account at https://pythonanywhere.com
+2. Go to the "Files" tab and upload your project files, or clone from GitHub
+3. Go to "Web" tab and create a new web app
+4. Select "Flask" and Python 3.10 (or latest available)
+5. Set the source code path to `/home/yourusername/yourproject`
+6. Set the application file to `app.py`
+7. In the "Virtualenv" section, create a virtual environment and install requirements: `pip install -r requirements.txt`
+8. Reload the web app
+9. Your app will be available at `yourusername.pythonanywhere.com`
+
 Note: For production, build the frontend first:
 - `cd frontend && npm install && npm run build`
 - Update app.py to change 'frontend' to 'frontend/build' in send_from_directory calls
